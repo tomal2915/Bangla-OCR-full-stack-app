@@ -46,7 +46,7 @@ export default function Uploader({ onNewPrediction }) {
     formData.append('image', file);
 
     try {
-      // update API endpoint in .env to avoid hardcoding
+      // update API endpoint
       const res = await axios.post(`${API}/predict/`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
