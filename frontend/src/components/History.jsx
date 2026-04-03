@@ -8,11 +8,18 @@ export default function History({ refresh }) {
   const [loading,     setLoading]     = useState(true);
 
   useEffect(() => {
-    axios.get(`${API}/predictions/`)
-      .then(res => setPredictions(res.data))
-      .catch(()  => {})
-      .finally(() => setLoading(false));
-  }, [refresh]);   // re-fetches every time a new prediction is made
+  axios.get(`${API}/predictions/`)
+    .then(res => {
+      // Safety check — make sure response is an array
+      const data = Array.isArray(res.data) ? res.data : [];
+      setPredictions(data);
+    })
+    .catch(err => {
+      console.error('History fetch error:', err.response?.data || err.message);
+      setPredictions([]);
+    })
+    .finally(() => setLoading(false));
+}, [refresh]);   // re-fetches every time a new prediction is made
 
   const confClass = (c) =>
     c >= 80 ? 'conf-high' : c >= 50 ? 'conf-mid' : 'conf-low';
