@@ -3,6 +3,11 @@ import axios from 'axios';
 
 const API = process.env.REACT_APP_API_URL;
 
+// Safety check — will warn you in console if URL is misconfigured
+if (!API || !API.startsWith('http')) {
+  console.error('REACT_APP_API_URL is missing or invalid:', API);
+}
+
 export default function Uploader({ onNewPrediction }) {
   const [file,       setFile]       = useState(null);
   const [preview,    setPreview]    = useState(null);
