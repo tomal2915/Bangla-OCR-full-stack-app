@@ -3,14 +3,21 @@ from pathlib import Path
 from dotenv import load_dotenv
 import dj_database_url
 
-load_dotenv(os.path.join(Path(__file__).resolve().parent.parent.parent, '.env'))
+# Load .env from project root (3 levels up from this file)
+env_path = Path(__file__).resolve().parent.parent.parent / '.env'
+load_dotenv(env_path)
+
+# Temporary debug — remove after confirming .env loads correctly
+# print(">>> .env path:", env_path)
+# print(">>> CORS origins:", os.getenv('CORS_ALLOWED_ORIGINS'))
+# print(">>> DEBUG:", os.getenv('DEBUG'))
+# print(">>> SECRET_KEY loaded:", bool(os.getenv('SECRET_KEY')))
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY    = os.getenv('SECRET_KEY', 'fallback-dev-key-change-in-production')
-DEBUG         = os.getenv('DEBUG', 'False') == 'True'
+SECRET_KEY = os.getenv('SECRET_KEY', 'fallback-dev-key-change-in-production')
+DEBUG      = os.getenv('DEBUG', 'False') == 'True'
 
-# Include Railway domain + localhost
 ALLOWED_HOSTS = os.getenv(
     'ALLOWED_HOSTS',
     'localhost,127.0.0.1'
@@ -29,9 +36,9 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
-    'corsheaders.middleware.CorsMiddleware',        # ← must be first
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',   # ← must be right after Security
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -41,7 +48,7 @@ MIDDLEWARE = [
 ]
 
 CORS_ALLOW_CREDENTIALS = True
-CORS_ALLOWED_ORIGINS = os.getenv(
+CORS_ALLOWED_ORIGINS   = os.getenv(
     'CORS_ALLOWED_ORIGINS',
     'http://localhost:3000'
 ).split(',')
@@ -65,7 +72,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'backend.wsgi.application'
 
-# ── Database ────────────────────────────────────────────────
+# ── Database ─────────────────────────────────────────────────
 DATABASE_URL = os.getenv('DATABASE_URL')
 if DATABASE_URL:
     DATABASES = {'default': dj_database_url.parse(DATABASE_URL, conn_max_age=600)}
@@ -81,13 +88,11 @@ else:
         }
     }
 
-# ── Media files ─────────────────────────────────────────────
+# ── Media files ──────────────────────────────────────────────
 MEDIA_URL  = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
-# ── ML model paths ──────────────────────────────────────────
-# On Railway, set ML_MODEL_PATH and ML_CLASS_MAP as env vars
-# pointing to where you uploaded the files (see note below)
+# ── ML model paths ───────────────────────────────────────────
 ML_MODEL_PATH = os.getenv(
     'ML_MODEL_PATH',
     str(BASE_DIR.parent / 'ml' / 'bangla_ocr.h5')
@@ -98,10 +103,11 @@ ML_CLASS_MAP = os.getenv(
 )
 
 # ── Static files ─────────────────────────────────────────────
-STATIC_URL  = '/static/'                           # ← only defined once
+STATIC_URL  = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
+# ── Auth password validators ─────────────────────────────────
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
     {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
@@ -109,12 +115,15 @@ AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
 ]
 
+# ── Internationalisation ─────────────────────────────────────
 LANGUAGE_CODE = 'en-us'
 TIME_ZONE     = 'UTC'
 USE_I18N      = True
 USE_TZ        = True
+
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+# ── Django REST Framework ────────────────────────────────────
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [],
     'DEFAULT_PERMISSION_CLASSES':     [],
