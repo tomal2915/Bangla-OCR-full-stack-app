@@ -3,6 +3,10 @@ from pathlib import Path
 from dotenv import load_dotenv
 import dj_database_url
 
+# Force HTTPS for all generated URLs (especially media)
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+USE_X_FORWARDED_HOST = True
+
 load_dotenv(os.path.join(Path(__file__).resolve().parent.parent.parent, '.env'))
 
 BASE_DIR = Path(__file__).resolve().parent.parent
