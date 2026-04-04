@@ -3,15 +3,18 @@ from pathlib import Path
 from dotenv import load_dotenv
 import dj_database_url
 
-
-
 load_dotenv(os.path.join(Path(__file__).resolve().parent.parent.parent, '.env'))
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY    = os.getenv('SECRET_KEY')
+SECRET_KEY    = os.getenv('SECRET_KEY', 'fallback-dev-key-change-in-production')
 DEBUG         = os.getenv('DEBUG', 'False') == 'True'
-ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost').split(',')
+
+# Include Railway domain + localhost
+ALLOWED_HOSTS = os.getenv(
+    'ALLOWED_HOSTS',
+    'localhost,127.0.0.1'
+).split(',')
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -26,9 +29,9 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
-    'corsheaders.middleware.CorsMiddleware',
+    'corsheaders.middleware.CorsMiddleware',        # ← must be first
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',   # ← add for static files
+    'whitenoise.middleware.WhiteNoiseMiddleware',   # ← must be right after Security
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -37,9 +40,11 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-# CORS — allow both local and Vercel frontend
 CORS_ALLOW_CREDENTIALS = True
-CORS_ALLOWED_ORIGINS = os.getenv('CORS_ALLOWED_ORIGINS','http://localhost:3000').split(',')
+CORS_ALLOWED_ORIGINS = os.getenv(
+    'CORS_ALLOWED_ORIGINS',
+    'http://localhost:3000'
+).split(',')
 
 ROOT_URLCONF = 'backend.urls'
 
@@ -60,7 +65,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'backend.wsgi.application'
 
-# ── Database — uses DATABASE_URL env var on Railway, falls back to local ──
+# ── Database ────────────────────────────────────────────────
 DATABASE_URL = os.getenv('DATABASE_URL')
 if DATABASE_URL:
     DATABASES = {'default': dj_database_url.parse(DATABASE_URL, conn_max_age=600)}
@@ -76,16 +81,24 @@ else:
         }
     }
 
-# ── Media files ────────────────────────────────────────────
+# ── Media files ─────────────────────────────────────────────
 MEDIA_URL  = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
-# ── ML model paths ─────────────────────────────────────────
-ML_MODEL_PATH = os.path.join(BASE_DIR, os.getenv('ML_MODEL_PATH', '../ml/bangla_ocr.h5'))
-ML_CLASS_MAP  = os.path.join(BASE_DIR, os.getenv('ML_CLASS_MAP',  '../ml/class_map.json'))
+# ── ML model paths ──────────────────────────────────────────
+# On Railway, set ML_MODEL_PATH and ML_CLASS_MAP as env vars
+# pointing to where you uploaded the files (see note below)
+ML_MODEL_PATH = os.getenv(
+    'ML_MODEL_PATH',
+    str(BASE_DIR.parent / 'ml' / 'bangla_ocr.h5')
+)
+ML_CLASS_MAP = os.getenv(
+    'ML_CLASS_MAP',
+    str(BASE_DIR.parent / 'ml' / 'class_map.json')
+)
 
-# ── Static files (whitenoise serves them in production) ────
-STATIC_URL  = '/static/'
+# ── Static files ─────────────────────────────────────────────
+STATIC_URL  = '/static/'                           # ← only defined once
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
@@ -100,5 +113,9 @@ LANGUAGE_CODE = 'en-us'
 TIME_ZONE     = 'UTC'
 USE_I18N      = True
 USE_TZ        = True
-STATIC_URL    = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [],
+    'DEFAULT_PERMISSION_CLASSES':     [],
+}
