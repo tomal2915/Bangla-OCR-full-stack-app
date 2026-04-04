@@ -47,7 +47,7 @@ export default function Uploader({ onNewPrediction }) {
 
     try {
       // update API endpoint
-      const res = await axios.post(`${API}/predicts/`, formData, {
+      const res = await axios.post(`${API}/predict/`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
       setResult(res.data);
