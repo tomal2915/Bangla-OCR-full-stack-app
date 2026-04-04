@@ -39,7 +39,7 @@ MIDDLEWARE = [
 
 # CORS — allow both local and Vercel frontend
 CORS_ALLOW_CREDENTIALS = True
-CORS_ALLOWED_ORIGINS = os.getenv('CORS_ALLOWED_ORIGINS', 'http://localhost:3000').split(',')
+CORS_ALLOWED_ORIGINS = os.getenv('CORS_ALLOWED_ORIGINS','http://localhost:3000').split(',')
 
 ROOT_URLCONF = 'backend.urls'
 
