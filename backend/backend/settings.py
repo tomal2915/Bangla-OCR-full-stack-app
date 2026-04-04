@@ -3,15 +3,9 @@ from pathlib import Path
 from dotenv import load_dotenv
 import dj_database_url
 
-# Load .env from project root (3 levels up from this file)
+# Load .env from project root
 env_path = Path(__file__).resolve().parent.parent.parent / '.env'
 load_dotenv(env_path)
-
-# Temporary debug — remove after confirming .env loads correctly
-# print(">>> .env path:", env_path)
-# print(">>> CORS origins:", os.getenv('CORS_ALLOWED_ORIGINS'))
-# print(">>> DEBUG:", os.getenv('DEBUG'))
-# print(">>> SECRET_KEY loaded:", bool(os.getenv('SECRET_KEY')))
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -36,7 +30,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
-    'corsheaders.middleware.CorsMiddleware',
+    'corsheaders.middleware.CorsMiddleware',        # must stay first
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -47,11 +41,15 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+# ── CORS ─────────────────────────────────────────────────────
+# Parse comma-separated origins from .env so you can add
+# multiple origins (local + Vercel) without changing code
+_raw_origins = os.getenv('CORS_ALLOWED_ORIGINS', 'http://localhost:3000')
+CORS_ALLOWED_ORIGINS = [o.strip() for o in _raw_origins.split(',')]
 CORS_ALLOW_CREDENTIALS = True
-CORS_ALLOWED_ORIGINS   = os.getenv(
-    'CORS_ALLOWED_ORIGINS',
-    'http://localhost:3000'
-).split(',')
+
+# Allow all origins in local development only
+CORS_ALLOW_ALL_ORIGINS = DEBUG  # True locally, False in production
 
 ROOT_URLCONF = 'backend.urls'
 
@@ -75,7 +73,13 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 # ── Database ─────────────────────────────────────────────────
 DATABASE_URL = os.getenv('DATABASE_URL')
 if DATABASE_URL:
-    DATABASES = {'default': dj_database_url.parse(DATABASE_URL, conn_max_age=600)}
+    DATABASES = {
+        'default': dj_database_url.parse(
+            DATABASE_URL,
+            conn_max_age=600,
+            ssl_require=True,
+        )
+    }
 else:
     DATABASES = {
         'default': {
