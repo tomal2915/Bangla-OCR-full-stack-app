@@ -1,16 +1,17 @@
-from django.shortcuts import render
+import os
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.parsers import MultiPartParser, FormParser
-import os
+from django.http import JsonResponse
+from django.conf import settings
 
 from .models import Prediction
 from .serializers import PredictionSerializer
 from .ml_model import predict_image
 
-# Accepted file extensions (content-type can lie on Windows)
 ALLOWED_EXTENSIONS = {'.png', '.jpg', '.jpeg', '.bmp'}
+
 
 class PredictView(APIView):
     parser_classes = [MultiPartParser, FormParser]
@@ -23,8 +24,6 @@ class PredictView(APIView):
             )
 
         image_file = request.FILES['image']
-
-        # Check by file extension — more reliable than content-type on Windows
         ext = os.path.splitext(image_file.name)[1].lower()
         if ext not in ALLOWED_EXTENSIONS:
             return Response(
@@ -45,7 +44,6 @@ class PredictView(APIView):
             predicted  = predicted_label,
             confidence = confidence,
         )
-
         serializer = PredictionSerializer(
             prediction,
             context={'request': request}
@@ -62,3 +60,15 @@ class PredictionHistoryView(APIView):
             context={'request': request}
         )
         return Response(serializer.data)
+
+
+# ── Temporary debug endpoint ──────────────────────────────────
+# Visit /debug/ on Railway to confirm env vars are loaded correctly
+# Remove this view and its url entry once CORS is confirmed working
+def debug_cors(request):
+    return JsonResponse({
+        'CORS_ALLOWED_ORIGINS': settings.CORS_ALLOWED_ORIGINS,
+        'CORS_ALLOW_ALL_ORIGINS': settings.CORS_ALLOW_ALL_ORIGINS,
+        'DEBUG': settings.DEBUG,
+        'ALLOWED_HOSTS': settings.ALLOWED_HOSTS,
+    })
