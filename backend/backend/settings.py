@@ -10,7 +10,11 @@ load_dotenv(env_path, override=False)
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.getenv('SECRET_KEY', 'fallback-dev-key-change-in-production')
-DEBUG      = os.getenv('DEBUG', 'False') == 'True'
+DEBUG = os.getenv('DEBUG', 'False') == 'True'
+
+# Tell Django to trust Railway's HTTPS proxy
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+USE_X_FORWARDED_HOST    = True
 
 ALLOWED_HOSTS = [
     h.strip()
