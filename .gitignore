@@ -5,6 +5,11 @@ __pycache__/
 *.pyo
 *.pyd
 .Python
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
 
 # Environment variables — NEVER commit these
 .env
@@ -16,21 +21,49 @@ backend/media/
 backend/db.sqlite3
 *.log
 
-# ML model files (too large for GitHub)
-# Allow model files even if *.h5 is ignored
-# !ml/bangla_ocr.h5
-# !ml/class_map.json
+# ML model files - ALLOW these specific files
+!ml/bangla_ocr.keras
+!ml/bangla_ocr.h5
+!ml/class_map.json
+!ml_models/*.keras
+!ml_models/*.h5
+!ml_models/*.json
+
+# ML datasets (too large for GitHub) - EXCLUDE these
 ml/dataset/
+ml/data/
+ml/training_data/
+*.csv
+*.pkl
+*.pickle
 
 # React
 frontend/node_modules/
 frontend/build/
 frontend/.env
+frontend/package-lock.json
+frontend/yarn.lock
 
-# VS Code
+# IDE
 .vscode/
-*.code-workspace
+.idea/
+*.swp
+*.swo
+*~
+.code-workspace
 
-# Windows
+# OS files
 Thumbs.db
 desktop.ini
+.DS_Store
+
+# Logs and temporary files
+*.log
+*.tmp
+*.temp
+logs/
+tmp/
+
+# Railway specific
+.railway/
+*.pid
