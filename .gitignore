@@ -59,3 +59,8 @@ tmp/
 # ── Railway ───────────────────────────────────────────────────
 .railway/
 *.pid
+
+# Allow ML model files to be committed
+!ml/bangla_ocr.h5
+!ml/class_map.json
+!ml/*.keras
