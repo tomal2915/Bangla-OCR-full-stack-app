@@ -2,6 +2,19 @@ import os
 from pathlib import Path
 from dotenv import load_dotenv
 import dj_database_url
+import cloudinary
+
+INSTALLED_APPS += ['cloudinary_storage', 'cloudinary']
+
+# Must come AFTER DEFAULT_FILE_STORAGE
+DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+
+CLOUDINARY_STORAGE = {
+    'CLOUD_NAME': os.getenv('CLOUDINARY_CLOUD_NAME'),
+    'API_KEY':    os.getenv('CLOUDINARY_API_KEY'),
+    'API_SECRET': os.getenv('CLOUDINARY_API_SECRET'),
+}
+
 
 # Only load .env locally — on Railway env vars are injected directly
 # load_dotenv does nothing if the file doesn't exist, which is correct

@@ -1,79 +1,101 @@
-import { useEffect, useState } from 'react';
-import axios from 'axios';
+import { useEffect, useState } from "react";
+import axios from "axios";
 
-const API = process.env.REACT_APP_API_URL || 'http://localhost:8000/api';
+const API = process.env.REACT_APP_API_URL || "http://localhost:8000/api";
 
 export default function History({ refresh }) {
   const [predictions, setPredictions] = useState([]);
-  const [loading,     setLoading]     = useState(true);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-  axios.get(`${API}/predictions/`)
-    .then(res => {
-      // Safety check — make sure response is an array
-      const data = Array.isArray(res.data) ? res.data : [];
-      setPredictions(data);
-    })
-    .catch(err => {
-      console.error('History fetch error:', err.response?.data || err.message);
-      setPredictions([]);
-    })
-    .finally(() => setLoading(false));
-}, [refresh]);   // re-fetches every time a new prediction is made
+    axios
+      .get(`${API}/predictions/`)
+      .then((res) => {
+        // Safety check — make sure response is an array
+        const data = Array.isArray(res.data) ? res.data : [];
+        setPredictions(data);
+      })
+      .catch((err) => {
+        console.error(
+          "History fetch error:",
+          err.response?.data || err.message,
+        );
+        setPredictions([]);
+      })
+      .finally(() => setLoading(false));
+  }, [refresh]); // re-fetches every time a new prediction is made
 
   const confClass = (c) =>
-    c >= 80 ? 'conf-high' : c >= 50 ? 'conf-mid' : 'conf-low';
+    c >= 80 ? "conf-high" : c >= 50 ? "conf-mid" : "conf-low";
 
   const formatDate = (iso) =>
-    new Date(iso).toLocaleString('en-GB', {
-      day: '2-digit', month: 'short',
-      hour: '2-digit', minute: '2-digit',
+    new Date(iso).toLocaleString("en-GB", {
+      day: "2-digit",
+      month: "short",
+      hour: "2-digit",
+      minute: "2-digit",
     });
 
-  if (loading) return (
-    <div className="card">
-      <div className="empty-state">Loading history...</div>
-    </div>
-  );
+  if (loading)
+    return (
+      <div className="card">
+        <div className="empty-state">Loading history...</div>
+      </div>
+    );
 
   return (
     <div className="card">
       <div className="card-title">Recent predictions</div>
-      {predictions.length === 0
-        ? <div className="empty-state">No predictions yet — upload an image above.</div>
-        : (
-          <table className="history-table">
-            <thead>
-              <tr>
-                <th>Image</th>
-                <th style={{ textAlign: 'center' }}>Character</th>
-                <th>Confidence</th>
-                <th>Date</th>
+      {predictions.length === 0 ? (
+        <div className="empty-state">
+          No predictions yet — upload an image above.
+        </div>
+      ) : (
+        <table className="history-table">
+          <thead>
+            <tr>
+              <th>Image</th>
+              <th style={{ textAlign: "center" }}>Character</th>
+              <th>Confidence</th>
+              <th>Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            {predictions.map((p) => (
+              <tr key={p.id}>
+                <td>
+                  {p.image_url ? (
+                    <img src={p.image_url} alt="uploaded" className="thumb" />
+                  ) : (
+                    <div
+                      style={{
+                        width: 36,
+                        height: 36,
+                        background: "var(--color-background-secondary)",
+                        borderRadius: 4,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        fontSize: 10,
+                        color: "var(--color-text-secondary)",
+                      }}
+                    >
+                      N/A
+                    </div>
+                  )}
+                </td>
+                <td className="char-cell">{p.predicted}</td>
+                <td>
+                  <span className={`conf-pill ${confClass(p.confidence)}`}>
+                    {p.confidence}%
+                  </span>
+                </td>
+                <td style={{ color: "#6b6b6b" }}>{formatDate(p.created_at)}</td>
               </tr>
-            </thead>
-            <tbody>
-              {predictions.map(p => (
-                <tr key={p.id}>
-                  <td>
-                    <img
-                      src={p.image}
-                      alt="uploaded"
-                      className="thumb"
-                    />
-                  </td>
-                  <td className="char-cell">{p.predicted}</td>
-                  <td>
-                    <span className={`conf-pill ${confClass(p.confidence)}`}>
-                      {p.confidence}%
-                    </span>
-                  </td>
-                  <td style={{ color: '#6b6b6b' }}>{formatDate(p.created_at)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )
-      }
+            ))}
+          </tbody>
+        </table>
+      )}
     </div>
   );
 }
