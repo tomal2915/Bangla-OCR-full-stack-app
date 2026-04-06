@@ -124,11 +124,12 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 # ── ML model paths ────────────────────────────────────────────
 ML_MODEL_PATH = os.getenv(
     'ML_MODEL_PATH',
-    str(BASE_DIR.parent / 'ml' / 'bangla_ocr.h5')
+    str(BASE_DIR.parent / 'ml_models' / 'bangla_ocr.h5')
 )
+
 ML_CLASS_MAP = os.getenv(
     'ML_CLASS_MAP',
-    str(BASE_DIR.parent / 'ml' / 'class_map.json')
+    str(BASE_DIR.parent / 'ml_models' / 'class_map.json')
 )
 
 # ── Static files ──────────────────────────────────────────────
