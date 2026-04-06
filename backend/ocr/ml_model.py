@@ -51,6 +51,7 @@ def predict_image(image_file):
             "Please configure ML_MODEL_PATH and ML_CLASS_MAP correctly."
         )
 
+    image_file.seek(0)   # ← add this line
     img = Image.open(image_file).convert("L")
     img = img.resize(IMG_SIZE)
 

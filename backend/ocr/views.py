@@ -1,14 +1,17 @@
 import os
+import io
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.parsers import MultiPartParser, FormParser
 from django.http import JsonResponse
 from django.conf import settings
+from django.core.files.base import ContentFile
 
 from .models import Prediction
 from .serializers import PredictionSerializer
 from .ml_model import predict_image
+from PIL import Image
 
 ALLOWED_EXTENSIONS = {'.png', '.jpg', '.jpeg', '.bmp'}
 
@@ -31,6 +34,7 @@ class PredictView(APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
+        # Run ML prediction before converting
         try:
             predicted_label, confidence = predict_image(image_file)
         except Exception as e:
@@ -39,8 +43,21 @@ class PredictView(APIView):
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
+        # Convert any format (including .bmp) to PNG for browser compatibility
+        image_file.seek(0)   # reset file pointer after predict_image read it
+        pil_img    = Image.open(image_file).convert('RGB')
+        png_buffer = io.BytesIO()
+        pil_img.save(png_buffer, format='PNG')
+        png_buffer.seek(0)
+
+        # Build a new filename with .png extension
+        base_name   = os.path.splitext(image_file.name)[0]
+        png_filename = base_name + '.png'
+        png_file     = ContentFile(png_buffer.read(), name=png_filename)
+
+        # Save to database with the converted PNG
         prediction = Prediction.objects.create(
-            image      = image_file,
+            image      = png_file,
             predicted  = predicted_label,
             confidence = confidence,
         )
@@ -62,9 +79,6 @@ class PredictionHistoryView(APIView):
         return Response(serializer.data)
 
 
-# ── Temporary debug endpoint ──────────────────────────────────
-# Visit /debug/ on Railway to confirm env vars are loaded correctly
-# Remove this view and its url entry once CORS is confirmed working
 def debug_cors(request):
     return JsonResponse({
         'CORS_ALLOWED_ORIGINS': settings.CORS_ALLOWED_ORIGINS,
