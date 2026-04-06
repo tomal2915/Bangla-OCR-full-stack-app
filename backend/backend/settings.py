@@ -2,24 +2,10 @@ import os
 from pathlib import Path
 from dotenv import load_dotenv
 import dj_database_url
-import cloudinary
-
-INSTALLED_APPS += ['cloudinary_storage', 'cloudinary']
-
-# Must come AFTER DEFAULT_FILE_STORAGE
-DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
-
-CLOUDINARY_STORAGE = {
-    'CLOUD_NAME': os.getenv('CLOUDINARY_CLOUD_NAME'),
-    'API_KEY':    os.getenv('CLOUDINARY_API_KEY'),
-    'API_SECRET': os.getenv('CLOUDINARY_API_SECRET'),
-}
-
 
 # Only load .env locally — on Railway env vars are injected directly
-# load_dotenv does nothing if the file doesn't exist, which is correct
 env_path = Path(__file__).resolve().parent.parent.parent / '.env'
-load_dotenv(env_path, override=False)  # override=False means Railway vars win
+load_dotenv(env_path, override=False)
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -32,6 +18,7 @@ ALLOWED_HOSTS = [
     if h.strip()
 ]
 
+# ── Installed apps ────────────────────────────────────────────
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -41,11 +28,13 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'corsheaders',
+    'cloudinary_storage',       # ← must be before staticfiles
+    'cloudinary',               # ← add here, not at the bottom
     'ocr',
 ]
 
 MIDDLEWARE = [
-    'corsheaders.middleware.CorsMiddleware',        # must stay first
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -62,8 +51,8 @@ CORS_ALLOWED_ORIGINS = [
     o.strip() for o in _raw_origins.split(',') if o.strip()
 ]
 CORS_ALLOW_CREDENTIALS = True
-CORS_ALLOW_ALL_ORIGINS = False          # always explicit — never wildcard
-CORS_ALLOW_HEADERS = [                  # explicitly allow common headers
+CORS_ALLOW_ALL_ORIGINS = False
+CORS_ALLOW_HEADERS = [
     'accept',
     'accept-encoding',
     'authorization',
@@ -116,7 +105,15 @@ else:
         }
     }
 
-# ── Media files ───────────────────────────────────────────────
+# ── Cloudinary (persistent media storage) ────────────────────
+CLOUDINARY_STORAGE = {
+    'CLOUD_NAME': os.getenv('CLOUDINARY_CLOUD_NAME'),
+    'API_KEY':    os.getenv('CLOUDINARY_API_KEY'),
+    'API_SECRET': os.getenv('CLOUDINARY_API_SECRET'),
+}
+DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+
+# ── Media files (local fallback) ──────────────────────────────
 MEDIA_URL  = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
