@@ -18,8 +18,8 @@ backend/db.sqlite3
 
 # ML model files (too large for GitHub)
 # Allow model files even if *.h5 is ignored
-!ml/bangla_ocr.h5
-!ml/class_map.json
+# !ml/bangla_ocr.h5
+# !ml/class_map.json
 ml/dataset/
 
 # React
