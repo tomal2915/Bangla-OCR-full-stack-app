@@ -1,5 +1,6 @@
 import json
 import os
+import io
 import numpy as np
 from django.conf import settings
 from PIL import Image
@@ -24,7 +25,7 @@ IMG_SIZE  = (32, 32)
 def _load():
     global model, class_map
 
-    model_path    = settings.ML_MODEL_PATH
+    model_path     = settings.ML_MODEL_PATH
     class_map_path = settings.ML_CLASS_MAP
 
     if not os.path.exists(model_path):
@@ -42,17 +43,19 @@ def _load():
         class_map = json.load(f)
     print("Model loaded successfully.")
 
-_load()   # runs once when Django starts
+_load()
 
-def predict_image(image_file):
+def predict_image(image_input):
+    """
+    Accepts a BytesIO object or a Django file object.
+    """
     if model is None:
         raise RuntimeError(
             "ML model is not loaded on this server. "
             "Please configure ML_MODEL_PATH and ML_CLASS_MAP correctly."
         )
 
-    image_file.seek(0)   # ← add this line
-    img = Image.open(image_file).convert("L")
+    img = Image.open(image_input).convert("L")
     img = img.resize(IMG_SIZE)
 
     arr = np.array(img, dtype="float32") / 255.0

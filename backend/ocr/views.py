@@ -7,11 +7,11 @@ from rest_framework.parsers import MultiPartParser, FormParser
 from django.http import JsonResponse
 from django.conf import settings
 from django.core.files.base import ContentFile
+from PIL import Image
 
 from .models import Prediction
 from .serializers import PredictionSerializer
 from .ml_model import predict_image
-from PIL import Image
 
 ALLOWED_EXTENSIONS = {'.png', '.jpg', '.jpeg', '.bmp'}
 
@@ -34,33 +34,50 @@ class PredictView(APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        # Run ML prediction before converting
+        # Read the raw bytes once — avoids seek() issues with cloud storage
+        raw_bytes = image_file.read()
+
+        # Run ML prediction from bytes
         try:
-            predicted_label, confidence = predict_image(image_file)
+            predicted_label, confidence = predict_image(
+                io.BytesIO(raw_bytes)
+            )
         except Exception as e:
             return Response(
                 {'error': f'Prediction failed: {str(e)}'},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
-        # Convert any format (including .bmp) to PNG for browser compatibility
-        image_file.seek(0)   # reset file pointer after predict_image read it
-        pil_img    = Image.open(image_file).convert('RGB')
-        png_buffer = io.BytesIO()
-        pil_img.save(png_buffer, format='PNG')
-        png_buffer.seek(0)
+        # Convert to PNG for browser compatibility
+        try:
+            pil_img    = Image.open(io.BytesIO(raw_bytes)).convert('RGB')
+            png_buffer = io.BytesIO()
+            pil_img.save(png_buffer, format='PNG')
+            png_bytes  = png_buffer.getvalue()
+        except Exception as e:
+            return Response(
+                {'error': f'Image conversion failed: {str(e)}'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
-        # Build a new filename with .png extension
-        base_name   = os.path.splitext(image_file.name)[0]
+        # Build PNG file for storage
+        base_name    = os.path.splitext(image_file.name)[0]
         png_filename = base_name + '.png'
-        png_file     = ContentFile(png_buffer.read(), name=png_filename)
+        png_file     = ContentFile(png_bytes, name=png_filename)
 
-        # Save to database with the converted PNG
-        prediction = Prediction.objects.create(
-            image      = png_file,
-            predicted  = predicted_label,
-            confidence = confidence,
-        )
+        # Save to database
+        try:
+            prediction = Prediction.objects.create(
+                image      = png_file,
+                predicted  = predicted_label,
+                confidence = confidence,
+            )
+        except Exception as e:
+            return Response(
+                {'error': f'Database save failed: {str(e)}'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
         serializer = PredictionSerializer(
             prediction,
             context={'request': request}
