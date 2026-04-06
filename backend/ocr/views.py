@@ -1,5 +1,6 @@
 import os
 import io
+import glob
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -34,14 +35,12 @@ class PredictView(APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        # Read the raw bytes once — avoids seek() issues with cloud storage
+        # Read raw bytes once — avoids seek() issues with cloud storage
         raw_bytes = image_file.read()
 
-        # Run ML prediction from bytes
+        # Run ML prediction
         try:
-            predicted_label, confidence = predict_image(
-                io.BytesIO(raw_bytes)
-            )
+            predicted_label, confidence = predict_image(io.BytesIO(raw_bytes))
         except Exception as e:
             return Response(
                 {'error': f'Prediction failed: {str(e)}'},
@@ -98,8 +97,34 @@ class PredictionHistoryView(APIView):
 
 def debug_cors(request):
     return JsonResponse({
-        'CORS_ALLOWED_ORIGINS': settings.CORS_ALLOWED_ORIGINS,
+        'CORS_ALLOWED_ORIGINS':   settings.CORS_ALLOWED_ORIGINS,
         'CORS_ALLOW_ALL_ORIGINS': settings.CORS_ALLOW_ALL_ORIGINS,
-        'DEBUG': settings.DEBUG,
-        'ALLOWED_HOSTS': settings.ALLOWED_HOSTS,
+        'DEBUG':                  settings.DEBUG,
+        'ALLOWED_HOSTS':          settings.ALLOWED_HOSTS,
+    })
+
+
+def debug_paths(request):
+    model_path     = settings.ML_MODEL_PATH
+    class_map_path = settings.ML_CLASS_MAP
+
+    # Search entire /app directory for .h5 files
+    h5_files = glob.glob('/app/**/*.h5', recursive=True)
+
+    # List directory contents to find where files actually are
+    def safe_listdir(path):
+        try:
+            return os.listdir(path)
+        except Exception as e:
+            return str(e)
+
+    return JsonResponse({
+        'ML_MODEL_PATH':    model_path,
+        'ML_CLASS_MAP':     class_map_path,
+        'model_exists':     os.path.exists(model_path),
+        'classmap_exists':  os.path.exists(class_map_path),
+        'h5_files_found':   h5_files,
+        'app_contents':     safe_listdir('/app'),
+        'app_backend':      safe_listdir('/app/backend'),
+        'app_backend_ml':   safe_listdir('/app/backend/ml_models'),
     })
