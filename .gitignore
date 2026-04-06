@@ -1,35 +1,36 @@
-# Python
+# ── Python ────────────────────────────────────────────────────
 venv/
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
-.Python
 *.so
 *.egg
 *.egg-info/
 dist/
 build/
+.Python
 
-# Environment variables — NEVER commit these
+# ── Environment variables — NEVER commit ─────────────────────
 .env
 .env.local
 .env.production
 
-# Django
+# ── Django ────────────────────────────────────────────────────
 backend/media/
 backend/db.sqlite3
 *.log
 
-# ML model files - ALLOW these specific files
+# ── ML model files — ALLOW these ─────────────────────────────
 !ml/bangla_ocr.keras
 !ml/bangla_ocr.h5
 !ml/class_map.json
+!ml_models/
 !ml_models/*.keras
 !ml_models/*.h5
 !ml_models/*.json
 
-# ML datasets (too large for GitHub) - EXCLUDE these
+# ── ML datasets — EXCLUDE these (too large) ──────────────────
 ml/dataset/
 ml/data/
 ml/training_data/
@@ -37,33 +38,32 @@ ml/training_data/
 *.pkl
 *.pickle
 
-# React
+# ── React ─────────────────────────────────────────────────────
 frontend/node_modules/
 frontend/build/
 frontend/.env
 frontend/package-lock.json
 frontend/yarn.lock
 
-# IDE
+# ── IDE ───────────────────────────────────────────────────────
 .vscode/
 .idea/
 *.swp
 *.swo
 *~
-.code-workspace
+*.code-workspace
 
-# OS files
+# ── OS ────────────────────────────────────────────────────────
 Thumbs.db
 desktop.ini
 .DS_Store
 
-# Logs and temporary files
-*.log
+# ── Logs and temp ─────────────────────────────────────────────
 *.tmp
 *.temp
 logs/
 tmp/
 
-# Railway specific
+# ── Railway ───────────────────────────────────────────────────
 .railway/
 *.pid
