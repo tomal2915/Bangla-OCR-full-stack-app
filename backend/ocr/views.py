@@ -1,6 +1,7 @@
 import os
 import io
 import glob
+
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -29,6 +30,7 @@ class PredictView(APIView):
 
         image_file = request.FILES['image']
         ext = os.path.splitext(image_file.name)[1].lower()
+
         if ext not in ALLOWED_EXTENSIONS:
             return Response(
                 {'error': f'Invalid file type: {ext}. Send PNG, JPEG, or BMP.'},
@@ -108,10 +110,10 @@ def debug_paths(request):
     model_path     = settings.ML_MODEL_PATH
     class_map_path = settings.ML_CLASS_MAP
 
-    # Search entire /app directory for .h5 files
-    h5_files = glob.glob('/app/**/*.h5', recursive=True)
+    # Search entire /app directory for model files
+    keras_files = glob.glob('/app/**/*.keras', recursive=True)
+    h5_files    = glob.glob('/app/**/*.h5',    recursive=True)
 
-    # List directory contents to find where files actually are
     def safe_listdir(path):
         try:
             return os.listdir(path)
@@ -119,12 +121,13 @@ def debug_paths(request):
             return str(e)
 
     return JsonResponse({
-        'ML_MODEL_PATH':    model_path,
-        'ML_CLASS_MAP':     class_map_path,
-        'model_exists':     os.path.exists(model_path),
-        'classmap_exists':  os.path.exists(class_map_path),
-        'h5_files_found':   h5_files,
-        'app_contents':     safe_listdir('/app'),
-        'app_backend':      safe_listdir('/app/backend'),
-        'app_backend_ml':   safe_listdir('/app/backend/ml_models'),
+        'ML_MODEL_PATH':      model_path,
+        'ML_CLASS_MAP':       class_map_path,
+        'model_exists':       os.path.exists(model_path),
+        'classmap_exists':    os.path.exists(class_map_path),
+        'keras_files_found':  keras_files,
+        'h5_files_found':     h5_files,
+        'app_contents':       safe_listdir('/app'),
+        'app_ml_models':      safe_listdir('/app/ml_models'),
+        'app_backend':        safe_listdir('/app/backend'),
     })
