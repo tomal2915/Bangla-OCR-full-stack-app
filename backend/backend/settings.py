@@ -3,16 +3,18 @@ from pathlib import Path
 from dotenv import load_dotenv
 import dj_database_url
 
-# Only load .env locally — on Railway env vars are injected directly
+# Load .env locally — Railway injects env vars directly
 env_path = Path(__file__).resolve().parent.parent.parent / '.env'
 load_dotenv(env_path, override=False)
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# Project root = one level above backend/
+_PROJECT_ROOT = BASE_DIR.parent
+
 SECRET_KEY = os.getenv('SECRET_KEY', 'fallback-dev-key-change-in-production')
 DEBUG = os.getenv('DEBUG', 'False') == 'True'
 
-# Tell Django to trust Railway's HTTPS proxy
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 USE_X_FORWARDED_HOST    = True
 
@@ -32,8 +34,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'corsheaders',
-    'cloudinary_storage',       # ← must be before staticfiles
-    'cloudinary',               # ← add here, not at the bottom
+    'cloudinary_storage',
+    'cloudinary',
     'ocr',
 ]
 
@@ -50,9 +52,10 @@ MIDDLEWARE = [
 ]
 
 # ── CORS ──────────────────────────────────────────────────────
-_raw_origins = os.getenv('CORS_ALLOWED_ORIGINS', 'http://localhost:3000')
 CORS_ALLOWED_ORIGINS = [
-    o.strip() for o in _raw_origins.split(',') if o.strip()
+    o.strip()
+    for o in os.getenv('CORS_ALLOWED_ORIGINS', 'http://localhost:3000').split(',')
+    if o.strip()
 ]
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_ALL_ORIGINS = False
@@ -101,11 +104,11 @@ else:
     DATABASES = {
         'default': {
             'ENGINE':   'django.db.backends.postgresql',
-            'NAME':     os.getenv('DB_NAME'),
-            'USER':     os.getenv('DB_USER'),
-            'PASSWORD': os.getenv('DB_PASSWORD'),
-            'HOST':     os.getenv('DB_HOST', 'localhost'),
-            'PORT':     os.getenv('DB_PORT', '5432'),
+            'NAME':     os.getenv('DB_NAME',     'bangla_ocr'),
+            'USER':     os.getenv('DB_USER',     'postgres'),
+            'PASSWORD': os.getenv('DB_PASSWORD', ''),
+            'HOST':     os.getenv('DB_HOST',     'localhost'),
+            'PORT':     os.getenv('DB_PORT',     '5432'),
         }
     }
 
@@ -117,20 +120,29 @@ CLOUDINARY_STORAGE = {
 }
 DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 
-# ── Media files (local fallback) ──────────────────────────────
+# ── Media files ───────────────────────────────────────────────
 MEDIA_URL  = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # ── ML model paths ────────────────────────────────────────────
-ML_MODEL_PATH = os.path.join(BASE_DIR, 'ml_models', 'bangla_ocr.h5')
-ML_CLASS_MAP  = os.path.join(BASE_DIR, 'ml_models', 'class_map.json')
+# Locally:  <project_root>/ml/bangla_ocr.keras
+# Railway:  set ML_MODEL_PATH and ML_CLASS_MAP env vars to
+#           wherever you upload the model files
+ML_MODEL_PATH = os.getenv(
+    'ML_MODEL_PATH',
+    str(_PROJECT_ROOT / 'ml' / 'bangla_ocr.keras')
+)
+ML_CLASS_MAP = os.getenv(
+    'ML_CLASS_MAP',
+    str(_PROJECT_ROOT / 'ml' / 'class_map.json')
+)
 
 # ── Static files ──────────────────────────────────────────────
 STATIC_URL  = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_STORAGE = 'whitenoise.storage.StaticFilesStorage'
 
-# ── Auth password validators ──────────────────────────────────
+# ── Password validators ───────────────────────────────────────
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
     {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},

@@ -21,6 +21,14 @@ backend/media/
 backend/db.sqlite3
 *.log
 
+# ── ML model files — ALLOW these ─────────────────────────────
+!ml/bangla_ocr.keras
+!ml/bangla_ocr.h5
+!ml/class_map.json
+!ml_models/
+!ml_models/*.keras
+!ml_models/*.h5
+!ml_models/*.json
 
 # ── ML datasets — EXCLUDE these (too large) ──────────────────
 ml/dataset/
@@ -59,8 +67,3 @@ tmp/
 # ── Railway ───────────────────────────────────────────────────
 .railway/
 *.pid
-
-# Allow ML model files to be committed
-!ml/bangla_ocr.h5
-!ml/class_map.json
-!ml/*.keras
