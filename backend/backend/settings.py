@@ -130,11 +130,11 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 #           wherever you upload the model files
 ML_MODEL_PATH = os.getenv(
     'ML_MODEL_PATH',
-    str(_PROJECT_ROOT / 'ml' / 'bangla_ocr.keras')
+    str(_PROJECT_ROOT / 'ml_models' / 'bangla_ocr.h5')
 )
 ML_CLASS_MAP = os.getenv(
     'ML_CLASS_MAP',
-    str(_PROJECT_ROOT / 'ml' / 'class_map.json')
+    str(_PROJECT_ROOT / 'ml_models' / 'class_map.json')
 )
 
 # ── Static files ──────────────────────────────────────────────
