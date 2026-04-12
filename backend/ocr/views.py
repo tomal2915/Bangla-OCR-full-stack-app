@@ -1,7 +1,5 @@
 # views.py
-from django.shortcuts import render
 
-# Create your views here.
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -11,16 +9,9 @@ from .predictor import predict_character
 
 
 class PredictView(APIView):
-    """
-    POST /api/predict/
-    Body: multipart/form-data with key 'image'
-    Returns: predicted character and confidence
-    """
-
     def post(self, request):
         image_file = request.FILES.get('image')
 
-        # validation
         if not image_file:
             return Response(
                 {'error': 'No image provided. Send image as multipart/form-data with key "image".'},
@@ -34,7 +25,7 @@ class PredictView(APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        if image_file.size > 5 * 1024 * 1024:  # 5MB limit
+        if image_file.size > 5 * 1024 * 1024:
             return Response(
                 {'error': 'Image too large. Maximum size is 5MB.'},
                 status=status.HTTP_400_BAD_REQUEST
@@ -49,11 +40,10 @@ class PredictView(APIView):
             )
         except Exception as e:
             return Response(
-                {'error': 'Prediction failed. Please try again.'},
+                {'error': f'Prediction failed: {str(e)}'},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
-        # save to database
         prediction = Prediction.objects.create(
             image      = image_file,
             character  = character,
@@ -61,20 +51,16 @@ class PredictView(APIView):
         )
 
         return Response({
-            'character'  : character,
-            'confidence' : confidence,
+            'character'         : character,
+            'confidence'        : confidence,
             'confidence_percent': f"{confidence * 100:.1f}%",
-            'id'         : prediction.id,
+            'id'                : prediction.id,
         }, status=status.HTTP_201_CREATED)
 
 
 class PredictionHistoryView(APIView):
-    """
-    GET /api/predictions/
-    Returns: last 20 predictions
-    """
-
     def get(self, request):
+        # no try/except here — let Django show the real error
         predictions = Prediction.objects.all()[:20]
         serializer  = PredictionSerializer(predictions, many=True)
         return Response(serializer.data)
