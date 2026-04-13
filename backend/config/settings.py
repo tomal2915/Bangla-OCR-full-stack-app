@@ -37,6 +37,7 @@ INSTALLED_APPS = [
 
 # ───────────────── MIDDLEWARE ─────────────────
 MIDDLEWARE = [
+    'ocr.middleware.CorsMiddleware',  # Add this
     'corsheaders.middleware.CorsMiddleware',  # MUST BE FIRST
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
