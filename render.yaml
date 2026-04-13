@@ -1,11 +1,10 @@
-# Render configuration for deploying the Bangla OCR API backend.
-
 services:
   - type: web
     name: bangla-ocr-api
     runtime: python
     rootDir: backend
-    buildCommand: "pip install -r requirements.txt && python manage.py collectstatic --no-input && python manage.py migrate"
+    pythonVersion: "3.11.9"
+    buildCommand: "pip install --upgrade pip setuptools wheel && pip install -r requirements.txt && python manage.py collectstatic --no-input && python manage.py migrate"
     startCommand: "gunicorn config.wsgi:application --bind 0.0.0.0:$PORT --workers 2"
     envVars:
       - key: DJANGO_SETTINGS_MODULE
