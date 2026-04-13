@@ -3,23 +3,24 @@ from pathlib import Path
 from dotenv import load_dotenv
 import dj_database_url
 
+# Disable TensorFlow optimization warning
 os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
 
 load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# ── Core ───────────────────────────────────────────────
-SECRET_KEY = os.getenv('SECRET_KEY')
-DEBUG      = os.getenv('DEBUG', 'False') == 'True'
+# ───────────────── CORE ─────────────────
+SECRET_KEY = os.getenv('SECRET_KEY', 'unsafe-secret-key')
+DEBUG = os.getenv('DEBUG', 'False') == 'True'
 
 ALLOWED_HOSTS = [
     h.strip()
-    for h in os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
+    for h in os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1,.onrender.com').split(',')
     if h.strip()
 ]
 
-# ── Apps ───────────────────────────────────────────────
+# ───────────────── APPS ─────────────────
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -27,26 +28,33 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
     'rest_framework',
     'corsheaders',
+
     'ocr',
 ]
 
-# ── Middleware — CorsMiddleware MUST be first ───────────
+# ───────────────── MIDDLEWARE ─────────────────
 MIDDLEWARE = [
-    'corsheaders.middleware.CorsMiddleware',
+    'corsheaders.middleware.CorsMiddleware',  # MUST BE FIRST
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
+
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
+
     'django.middleware.csrf.CsrfViewMiddleware',
+
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
+
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
 ROOT_URLCONF = 'config.urls'
 
+# ───────────────── TEMPLATES ─────────────────
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
@@ -65,7 +73,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'config.wsgi.application'
 
-# ── Database ───────────────────────────────────────────
+# ───────────────── DATABASE ─────────────────
 DATABASE_URL = os.getenv('DATABASE_URL')
 
 if DATABASE_URL:
@@ -79,16 +87,16 @@ if DATABASE_URL:
 else:
     DATABASES = {
         'default': {
-            'ENGINE'  : 'django.db.backends.postgresql',
-            'NAME'    : os.getenv('DB_NAME',     'bangla_ocr'),
-            'USER'    : os.getenv('DB_USER',     'postgres'),
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': os.getenv('DB_NAME', 'bangla_ocr'),
+            'USER': os.getenv('DB_USER', 'postgres'),
             'PASSWORD': os.getenv('DB_PASSWORD', ''),
-            'HOST'    : os.getenv('DB_HOST',     'localhost'),
-            'PORT'    : os.getenv('DB_PORT',     '5432'),
+            'HOST': os.getenv('DB_HOST', 'localhost'),
+            'PORT': os.getenv('DB_PORT', '5432'),
         }
     }
 
-# ── Password validation ────────────────────────────────
+# ───────────────── PASSWORD VALIDATION ─────────────────
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
     {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
@@ -96,65 +104,72 @@ AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
 ]
 
-# ── Internationalisation ───────────────────────────────
+# ───────────────── INTERNATIONALIZATION ─────────────────
 LANGUAGE_CODE = 'en-us'
-TIME_ZONE     = 'Asia/Dhaka'
-USE_I18N      = True
-USE_TZ        = True
+TIME_ZONE = 'Asia/Dhaka'
 
-# ── Static & media ─────────────────────────────────────
-STATIC_URL  = '/static/'
+USE_I18N = True
+USE_TZ = True
+
+# ───────────────── STATIC FILES ─────────────────
+STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
+
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
-MEDIA_URL  = '/media/'
+# ───────────────── MEDIA FILES ─────────────────
+MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
-# ── CORS ───────────────────────────────────────────────
-# Build the allowed origins list from env + hardcoded fallbacks
-_frontend_url = os.getenv('FRONTEND_URL', '').strip().rstrip('/')
+# ───────────────── CORS CONFIG (FIXED) ─────────────────
+
+CORS_ALLOW_ALL_ORIGINS = False  # keep False in production
 
 CORS_ALLOWED_ORIGINS = [
-    'http://localhost:3000',
-    'http://127.0.0.1:3000',
-    'https://bangla-ocr-full-stack-app.vercel.app',
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    "https://bangla-ocr-full-stack-app.vercel.app",
 ]
 
-if _frontend_url and _frontend_url not in CORS_ALLOWED_ORIGINS:
-    CORS_ALLOWED_ORIGINS.append(_frontend_url)
-
-# also match any Vercel preview deploy URL for this project
+# Allow all Vercel preview deployments
 CORS_ALLOWED_ORIGIN_REGEXES = [
-    r'^https://bangla-ocr-full-stack-app.*\.vercel\.app$',
+    r"^https://.*\.vercel\.app$",
 ]
 
 CORS_ALLOW_CREDENTIALS = True
 
 CORS_ALLOW_METHODS = [
-    'DELETE',
-    'GET',
-    'OPTIONS',
-    'PATCH',
-    'POST',
-    'PUT',
+    "DELETE",
+    "GET",
+    "OPTIONS",
+    "PATCH",
+    "POST",
+    "PUT",
 ]
 
 CORS_ALLOW_HEADERS = [
-    'accept',
-    'accept-encoding',
-    'authorization',
-    'content-type',
-    'dnt',
-    'origin',
-    'user-agent',
-    'x-csrftoken',
-    'x-requested-with',
+    "accept",
+    "accept-encoding",
+    "authorization",
+    "content-type",
+    "dnt",
+    "origin",
+    "user-agent",
+    "x-csrftoken",
+    "x-requested-with",
 ]
 
-# apply CORS to every URL
-CORS_URLS_REGEX = r'^.*$'
+CORS_URLS_REGEX = r"^/.*$"
 
-# ── REST Framework ─────────────────────────────────────
+# ───────────────── CSRF FIX (CRITICAL) ─────────────────
+
+CSRF_TRUSTED_ORIGINS = [
+    "https://bangla-ocr-full-stack-app.vercel.app",
+    "https://*.vercel.app",
+]
+
+# ───────────────── DJANGO REST FRAMEWORK ─────────────────
+
 REST_FRAMEWORK = {
     'DEFAULT_RENDERER_CLASSES': [
         'rest_framework.renderers.JSONRenderer',
@@ -165,8 +180,9 @@ REST_FRAMEWORK = {
     ],
 }
 
-# ── ML model paths ─────────────────────────────────────
-MODEL_PATH  = BASE_DIR / 'bangla_ocr.h5'
+# ───────────────── ML MODEL PATHS ─────────────────
+
+MODEL_PATH = BASE_DIR / 'bangla_ocr.h5'
 LABELS_PATH = BASE_DIR / 'class_labels.json'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
