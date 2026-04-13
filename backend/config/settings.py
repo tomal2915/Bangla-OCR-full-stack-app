@@ -107,6 +107,8 @@ MEDIA_ROOT = BASE_DIR / 'media'
 # ── CORS ──────────────────────────────────────────────
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:3000',
+    "https://bangla-ocr-full-stack-app.vercel.app",
+    "https://bangla-ocr-full-stack-app.onrender.com",
 ]
 
 FRONTEND_URL = os.getenv('FRONTEND_URL', '').strip()
