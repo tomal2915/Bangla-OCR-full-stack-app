@@ -115,8 +115,11 @@ CORS_ALLOWED_ORIGINS = [
     "https://bangla-ocr-full-stack-app.vercel.app",
 ]
 
-CORS_ALLOW_CREDENTIALS = True
+FRONTEND_URL = os.getenv('FRONTEND_URL', '').strip()
+if FRONTEND_URL:
+    CORS_ALLOWED_ORIGINS.append(FRONTEND_URL)
 
+CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_HEADERS = ["*"]
 CORS_ALLOW_METHODS = ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"]
 
