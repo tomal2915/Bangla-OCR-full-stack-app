@@ -1,5 +1,3 @@
-#predictor.py
-
 import json
 import numpy as np
 import cv2
@@ -9,32 +7,17 @@ from django.conf import settings
 _model  = None
 _labels = None
 
+
 def get_model():
     global _model, _labels
 
     if _model is None:
-        model_path = str(settings.MODEL_PATH)
-
-        if not settings.MODEL_PATH.exists():
-            raise FileNotFoundError(
-                f"Model file not found at {model_path}. "
-                f"Train the model first by running: python ml/train.py"
-            )
-
-        print(f"Loading OCR model from {model_path} ...")
-        _model = tf.keras.models.load_model(model_path)
+        print("Loading OCR model...")
+        _model = tf.keras.models.load_model(str(settings.MODEL_PATH))
         print("Model loaded successfully.")
 
     if _labels is None:
-        labels_path = settings.LABELS_PATH
-
-        if not labels_path.exists():
-            raise FileNotFoundError(
-                f"Labels file not found at {labels_path}. "
-                f"Train the model first — it generates class_labels.json automatically."
-            )
-
-        with open(labels_path, 'r', encoding='utf-8') as f:
+        with open(settings.LABELS_PATH, 'r', encoding='utf-8') as f:
             _labels = json.load(f)
 
     return _model, _labels
@@ -48,7 +31,7 @@ def predict_character(image_file):
 
     if img is None:
         raise ValueError(
-            "Could not decode image. Make sure it is a valid PNG, JPG, or BMP file."
+            "Could not decode image. Make sure it is a valid PNG or JPG."
         )
 
     img = cv2.resize(img, (32, 32))

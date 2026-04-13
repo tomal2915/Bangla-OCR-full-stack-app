@@ -2,7 +2,6 @@ import os
 from pathlib import Path
 from dotenv import load_dotenv
 import dj_database_url
-from corsheaders.defaults import default_headers
 
 os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
 
@@ -10,10 +9,17 @@ load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY    = os.getenv('SECRET_KEY')
-DEBUG         = os.getenv('DEBUG', 'False') == 'True'
-ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
+# ── Core ───────────────────────────────────────────────
+SECRET_KEY = os.getenv('SECRET_KEY')
+DEBUG      = os.getenv('DEBUG', 'False') == 'True'
 
+ALLOWED_HOSTS = [
+    h.strip()
+    for h in os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
+    if h.strip()
+]
+
+# ── Apps ───────────────────────────────────────────────
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -26,6 +32,7 @@ INSTALLED_APPS = [
     'ocr',
 ]
 
+# ── Middleware — CorsMiddleware MUST be first ───────────
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
@@ -81,6 +88,7 @@ else:
         }
     }
 
+# ── Password validation ────────────────────────────────
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
     {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
@@ -88,6 +96,7 @@ AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
 ]
 
+# ── Internationalisation ───────────────────────────────
 LANGUAGE_CODE = 'en-us'
 TIME_ZONE     = 'Asia/Dhaka'
 USE_I18N      = True
@@ -102,18 +111,48 @@ MEDIA_URL  = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
 # ── CORS ───────────────────────────────────────────────
+# Build the allowed origins list from env + hardcoded fallbacks
+_frontend_url = os.getenv('FRONTEND_URL', '').strip().rstrip('/')
+
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:3000',
+    'http://127.0.0.1:3000',
     'https://bangla-ocr-full-stack-app.vercel.app',
 ]
 
-FRONTEND_URL = os.getenv('FRONTEND_URL', '').strip()
-if FRONTEND_URL and FRONTEND_URL not in CORS_ALLOWED_ORIGINS:
-    CORS_ALLOWED_ORIGINS.append(FRONTEND_URL)
+if _frontend_url and _frontend_url not in CORS_ALLOWED_ORIGINS:
+    CORS_ALLOWED_ORIGINS.append(_frontend_url)
+
+# also match any Vercel preview deploy URL for this project
+CORS_ALLOWED_ORIGIN_REGEXES = [
+    r'^https://bangla-ocr-full-stack-app.*\.vercel\.app$',
+]
 
 CORS_ALLOW_CREDENTIALS = True
-CORS_ALLOW_HEADERS = list(default_headers) + ['content-type']
-CORS_ALLOW_METHODS = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS']
+
+CORS_ALLOW_METHODS = [
+    'DELETE',
+    'GET',
+    'OPTIONS',
+    'PATCH',
+    'POST',
+    'PUT',
+]
+
+CORS_ALLOW_HEADERS = [
+    'accept',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
+]
+
+# apply CORS to every URL
+CORS_URLS_REGEX = r'^.*$'
 
 # ── REST Framework ─────────────────────────────────────
 REST_FRAMEWORK = {
