@@ -71,13 +71,14 @@ if DATABASE_URL:
         'default': dj_database_url.config(
             default=DATABASE_URL,
             conn_max_age=600,
+            ssl_require=True,
         )
     }
 else:
     # local development — uses individual .env variables
     DATABASES = {
         'default': {
-            'ENGINE'  : 'django.db.backends.postgresql',
+            'ENGINE'  : 'django.db.backends.sqlite3',
             'NAME'    : os.getenv('DB_NAME',     'bangla_ocr'),
             'USER'    : os.getenv('DB_USER',     'postgres'),
             'PASSWORD': os.getenv('DB_PASSWORD', ''),
@@ -108,10 +109,15 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 MEDIA_URL  = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
-# ── CORS ──────────────────────────────────────────────────────────────────────
+# ── CORS ─────────────────────────────────────────────
 CORS_ALLOWED_ORIGINS = [
-    'http://localhost:3000',
+    'http://localhost:3000',  # local dev
 ]
+
+# add Render frontend URL from environment variable
+FRONTEND_URL = os.getenv('FRONTEND_URL')
+if FRONTEND_URL:
+    CORS_ALLOWED_ORIGINS.append(FRONTEND_URL)
 
 # ── REST Framework ────────────────────────────────────────────────────────────
 REST_FRAMEWORK = {
