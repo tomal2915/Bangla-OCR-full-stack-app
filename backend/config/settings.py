@@ -1,3 +1,5 @@
+# Django settings for config project.
+
 import os
 from pathlib import Path
 from dotenv import load_dotenv
@@ -11,7 +13,11 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.getenv('SECRET_KEY', 'fallback-dev-key')
 DEBUG      = os.getenv('DEBUG', 'True') == 'True'
-ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
+ALLOWED_HOSTS = [
+    "bangla-ocr-full-stack-app.onrender.com",
+    "localhost",
+    "127.0.0.1",
+]
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -106,10 +112,13 @@ MEDIA_ROOT = BASE_DIR / 'media'
 
 # ── CORS ──────────────────────────────────────────────
 CORS_ALLOWED_ORIGINS = [
-    'http://localhost:3000',
     "https://bangla-ocr-full-stack-app.vercel.app",
-    "https://bangla-ocr-full-stack-app.onrender.com",
 ]
+
+CORS_ALLOW_CREDENTIALS = True
+
+CORS_ALLOW_HEADERS = ["*"]
+CORS_ALLOW_METHODS = ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"]
 
 FRONTEND_URL = os.getenv('FRONTEND_URL', '').strip()
 if FRONTEND_URL:
