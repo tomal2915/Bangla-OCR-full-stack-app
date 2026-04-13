@@ -1,13 +1,10 @@
-# settings.py
 import os
 from pathlib import Path
 from dotenv import load_dotenv
 import dj_database_url
 
-# suppress TensorFlow oneDNN warnings
 os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
 
-# load .env file
 load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -60,13 +57,11 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'config.wsgi.application'
 
-# ── Database ─────────────────────────────────────────────────────────────────
-# locally reads individual variables from .env
-# on Render it reads the DATABASE_URL environment variable automatically
+# ── Database ──────────────────────────────────────────
 DATABASE_URL = os.getenv('DATABASE_URL')
 
 if DATABASE_URL:
-    # Render deployment — uses the full connection string
+    # Render production — full PostgreSQL connection string with SSL
     DATABASES = {
         'default': dj_database_url.config(
             default=DATABASE_URL,
@@ -75,10 +70,10 @@ if DATABASE_URL:
         )
     }
 else:
-    # local development — uses individual .env variables
+    # local development — individual .env variables, no SSL needed
     DATABASES = {
         'default': {
-            'ENGINE'  : 'django.db.backends.sqlite3',
+            'ENGINE'  : 'django.db.backends.postgresql',
             'NAME'    : os.getenv('DB_NAME',     'bangla_ocr'),
             'USER'    : os.getenv('DB_USER',     'postgres'),
             'PASSWORD': os.getenv('DB_PASSWORD', ''),
@@ -87,7 +82,7 @@ else:
         }
     }
 
-# ── Password validation ───────────────────────────────────────────────────────
+# ── Password validation ────────────────────────────────
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
     {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
@@ -95,13 +90,13 @@ AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
 ]
 
-# ── Internationalization ──────────────────────────────────────────────────────
+# ── Internationalization ───────────────────────────────
 LANGUAGE_CODE = 'en-us'
 TIME_ZONE     = 'Asia/Dhaka'
 USE_I18N      = True
 USE_TZ        = True
 
-# ── Static & media files ──────────────────────────────────────────────────────
+# ── Static & media files ───────────────────────────────
 STATIC_URL  = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
@@ -109,17 +104,16 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 MEDIA_URL  = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
-# ── CORS ─────────────────────────────────────────────
+# ── CORS ──────────────────────────────────────────────
 CORS_ALLOWED_ORIGINS = [
-    'http://localhost:3000',  # local dev
+    'http://localhost:3000',
 ]
 
-# add Render frontend URL from environment variable
-FRONTEND_URL = os.getenv('FRONTEND_URL')
+FRONTEND_URL = os.getenv('FRONTEND_URL', '').strip()
 if FRONTEND_URL:
     CORS_ALLOWED_ORIGINS.append(FRONTEND_URL)
 
-# ── REST Framework ────────────────────────────────────────────────────────────
+# ── REST Framework ─────────────────────────────────────
 REST_FRAMEWORK = {
     'DEFAULT_RENDERER_CLASSES': [
         'rest_framework.renderers.JSONRenderer',
@@ -130,7 +124,7 @@ REST_FRAMEWORK = {
     ],
 }
 
-# ── ML model paths ────────────────────────────────────────────────────────────
+# ── ML model paths ─────────────────────────────────────
 MODEL_PATH  = BASE_DIR / 'bangla_ocr.h5'
 LABELS_PATH = BASE_DIR / 'class_labels.json'
 
