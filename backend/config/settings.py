@@ -1,9 +1,8 @@
-# Django settings for config project.
-
 import os
 from pathlib import Path
 from dotenv import load_dotenv
 import dj_database_url
+from corsheaders.defaults import default_headers
 
 os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
 
@@ -11,13 +10,9 @@ load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = os.getenv('SECRET_KEY', 'fallback-dev-key')
-DEBUG      = os.getenv('DEBUG', 'True') == 'True'
-ALLOWED_HOSTS = [
-    "bangla-ocr-full-stack-app.onrender.com",
-    "localhost",
-    "127.0.0.1",
-]
+SECRET_KEY    = os.getenv('SECRET_KEY')
+DEBUG         = os.getenv('DEBUG', 'False') == 'True'
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -43,8 +38,6 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-CORS_ALLOW_ALL_ORIGINS = True  # for debugging
-
 ROOT_URLCONF = 'config.urls'
 
 TEMPLATES = [
@@ -65,11 +58,10 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'config.wsgi.application'
 
-# ── Database ──────────────────────────────────────────
+# ── Database ───────────────────────────────────────────
 DATABASE_URL = os.getenv('DATABASE_URL')
 
 if DATABASE_URL:
-    # Render production — full PostgreSQL connection string with SSL
     DATABASES = {
         'default': dj_database_url.config(
             default=DATABASE_URL,
@@ -78,7 +70,6 @@ if DATABASE_URL:
         )
     }
 else:
-    # local development — individual .env variables, no SSL needed
     DATABASES = {
         'default': {
             'ENGINE'  : 'django.db.backends.postgresql',
@@ -90,7 +81,6 @@ else:
         }
     }
 
-# ── Password validation ────────────────────────────────
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
     {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
@@ -98,13 +88,12 @@ AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
 ]
 
-# ── Internationalization ───────────────────────────────
 LANGUAGE_CODE = 'en-us'
 TIME_ZONE     = 'Asia/Dhaka'
 USE_I18N      = True
 USE_TZ        = True
 
-# ── Static & media files ───────────────────────────────
+# ── Static & media ─────────────────────────────────────
 STATIC_URL  = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
@@ -112,22 +101,19 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 MEDIA_URL  = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
-# ── CORS ──────────────────────────────────────────────
+# ── CORS ───────────────────────────────────────────────
 CORS_ALLOWED_ORIGINS = [
-    "https://bangla-ocr-full-stack-app.vercel.app",
+    'http://localhost:3000',
+    'https://bangla-ocr-full-stack-app.vercel.app',
 ]
 
 FRONTEND_URL = os.getenv('FRONTEND_URL', '').strip()
-if FRONTEND_URL:
+if FRONTEND_URL and FRONTEND_URL not in CORS_ALLOWED_ORIGINS:
     CORS_ALLOWED_ORIGINS.append(FRONTEND_URL)
 
 CORS_ALLOW_CREDENTIALS = True
-CORS_ALLOW_HEADERS = ["*"]
-CORS_ALLOW_METHODS = ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"]
-
-FRONTEND_URL = os.getenv('FRONTEND_URL', '').strip()
-if FRONTEND_URL:
-    CORS_ALLOWED_ORIGINS.append(FRONTEND_URL)
+CORS_ALLOW_HEADERS = list(default_headers) + ['content-type']
+CORS_ALLOW_METHODS = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS']
 
 # ── REST Framework ─────────────────────────────────────
 REST_FRAMEWORK = {
