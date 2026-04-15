@@ -67,7 +67,7 @@ export default function App() {
       {/* Header */}
       <header className="app-header">
         <h1 className="app-title">বাংলা OCR</h1>
-        <p className="app-subtitle">Bangla handwritten character recognition</p>
+        <p className="app-subtitle">Bangla Handwritten Character Recognition</p>
       </header>
 
       <main className="app-main">

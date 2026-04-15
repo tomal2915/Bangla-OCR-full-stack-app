@@ -28,20 +28,22 @@ A full-stack web application that recognises handwritten Bangla characters using
 
 ## Project Structure
 bangla-ocr-app/
-├── ml/                   # Model training and inference
-│   ├── train.py          # CNN training script
-│   ├── predict.py        # Single image prediction test
-│   └── class_map.json    # Class index to label mapping
 ├── backend/              # Django REST API
 │   ├── manage.py
 │   ├── backend/          # Project settings and URLs
-│   └── ocr/              # OCR app — models, views, serializers
+│   └── ocr/ 
+│    ├── ml/                   # Model training and inference
+│       ├── train.py          # CNN training script
+│       ├── predict.py        # Single image prediction test
+│   └── class_labels.json    # Class index to label mapping             # OCR app — models, views, serializers
 └── frontend/             # React application
 └── src/
 ├── components/
-│   ├── Uploader.jsx
-│   └── History.jsx
+│   ├── HistoryTable.jsx
+│   └── ResultCard.jsx
+│   └── UploadBox.jsx
 └── App.jsx
+└── App.css
 
 ---
 
@@ -58,18 +60,13 @@ bangla-ocr-app/
 
 ### 1. Clone the repository
 ```bash
-git clone https://github.com/YOUR_USERNAME/bangla-ocr-app.git
+git clone https://github.com/tomal2915/Bangla-OCR-full-stack-app.git
 cd bangla-ocr-app
 ```
 
 ---
 
 ### 2. Set up environment variables
-
-Copy the example env file and fill in your values:
-```bash
-copy .env.example .env
-```
 
 Open `.env` and set:
 ```env
@@ -83,13 +80,9 @@ DB_PASSWORD=your_postgres_password
 DB_HOST=localhost
 DB_PORT=5432
 
-ML_MODEL_PATH=../ml/bangla_ocr.h5
-ML_CLASS_MAP=../ml/class_map.json
-```
-
 Generate a secure `SECRET_KEY`:
 ```bash
-python -c "from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())"
+python -c "from django.core.management.utils import get_random_secret_key; print(get_random_secret_key(50))"
 ```
 
 ---
@@ -102,7 +95,7 @@ pip install tensorflow matplotlib
 python ml/train.py
 ```
 
-Training completes automatically when validation accuracy stops improving. The model is saved to `ml/bangla_ocr.h5`.
+Training completes automatically when validation accuracy stops improving. The model is saved to `/bangla_ocr.h5`.
 
 ---
 
@@ -189,8 +182,7 @@ curl -X POST http://localhost:8000/api/predict/ \
 | `DB_PASSWORD`    | PostgreSQL password                 | `yourpassword`        |
 | `DB_HOST`        | Database host                      | `localhost`           |
 | `DB_PORT`        | Database port                      | `5432`                |
-| `ML_MODEL_PATH`  | Path to trained `.h5` model        | `../ml/bangla_ocr.h5` |
-| `ML_CLASS_MAP`   | Path to class map JSON             | `../ml/class_map.json`|
+
 
 ---
 
