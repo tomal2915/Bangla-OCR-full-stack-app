@@ -27,11 +27,12 @@ A full-stack web application that recognises handwritten Bangla characters using
 ---
 
 ## Project Structure
+
 bangla-ocr-app/
 ├── backend/              # Django REST API
 │   ├── manage.py
 │   ├── backend/          # Project settings and URLs
-│   └── ocr/ 
+│   └── ocr/
 │    ├── ml/                   # Model training and inference
 │       ├── train.py          # CNN training script
 │       ├── predict.py        # Single image prediction test
@@ -59,6 +60,7 @@ bangla-ocr-app/
 ---
 
 ### 1. Clone the repository
+
 ```bash
 git clone https://github.com/tomal2915/Bangla-OCR-full-stack-app.git
 cd bangla-ocr-app
@@ -69,6 +71,7 @@ cd bangla-ocr-app
 ### 2. Set up environment variables
 
 Open `.env` and set:
+
 ```env
 SECRET_KEY=your-django-secret-key
 DEBUG=True
@@ -90,6 +93,7 @@ python -c "from django.core.management.utils import get_random_secret_key; print
 ### 3. Train the ML model
 
 Download the [CMATERdb 3.1.2 dataset](https://www.kaggle.com/datasets/debdoot/cmaterdb) and place the folders inside `ml/dataset/`.
+
 ```bash
 pip install tensorflow matplotlib
 python ml/train.py
@@ -100,6 +104,7 @@ Training completes automatically when validation accuracy stops improving. The m
 ---
 
 ### 4. Set up the backend
+
 ```bash
 cd backend
 python -m venv venv
@@ -108,11 +113,13 @@ pip install -r requirements.txt
 ```
 
 Create the PostgreSQL database:
+
 ```bash
 psql -U postgres -c "CREATE DATABASE bangla_ocr;"
 ```
 
 Run migrations and start the server:
+
 ```bash
 python manage.py migrate
 python manage.py runserver
@@ -125,16 +132,19 @@ Django runs at **http://localhost:8000**
 ### 5. Set up the frontend
 
 Open a new terminal:
+
 ```bash
 cd frontend
 ```
 
 Create `frontend/.env`:
+
 ```env
 REACT_APP_API_URL=http://localhost:8000/api
 ```
 
 Install dependencies and start:
+
 ```bash
 npm install
 npm start
@@ -152,12 +162,14 @@ React runs at **http://localhost:3000**
 | GET    | `/api/predictions/`| Retrieve last 20 predictions       |
 
 ### Example request
+
 ```bash
 curl -X POST http://localhost:8000/api/predict/ \
   -F "image=@handwritten_character.png"
 ```
 
 ### Example response
+
 ```json
 {
   "id": 1,
@@ -182,7 +194,6 @@ curl -X POST http://localhost:8000/api/predict/ \
 | `DB_PASSWORD`    | PostgreSQL password                 | `yourpassword`        |
 | `DB_HOST`        | Database host                      | `localhost`           |
 | `DB_PORT`        | Database port                      | `5432`                |
-
 
 ---
 
