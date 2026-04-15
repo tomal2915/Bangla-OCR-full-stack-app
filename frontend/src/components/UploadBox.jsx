@@ -1,5 +1,3 @@
-// UploadBox.jsx
-
 import { useState, useRef } from 'react';
 
 export default function UploadBox({ onFileSelect, loading }) {

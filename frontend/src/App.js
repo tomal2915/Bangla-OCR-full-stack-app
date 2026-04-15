@@ -1,5 +1,3 @@
-// App.js
-
 import { useState, useEffect, useCallback } from 'react';
 import UploadBox     from './components/UploadBox';
 import ResultCard    from './components/ResultCard';

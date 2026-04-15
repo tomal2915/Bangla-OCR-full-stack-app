@@ -1,5 +1,3 @@
-// ResultCard.jsx
-
 export default function ResultCard({ result, loading, error }) {
   if (loading) {
     return (

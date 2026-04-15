@@ -1,5 +1,3 @@
-// HistoryTable.jsx
-
 export default function HistoryTable({ history, loading }) {
   if (loading) {
     return <p className="history-status">Loading history...</p>;
