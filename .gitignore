@@ -26,11 +26,11 @@ media/
 staticfiles/
 
 # ── TensorFlow / ML model ────────────────────────────
+*.h5
 *.keras
 *.ckpt
 *.pb
-*.h5
-!bangla_ocr.h5
+__pycache__/
 .ipynb_checkpoints/
 datasets/
 data/
@@ -65,14 +65,3 @@ $RECYCLE.BIN/
 .DS_Store
 .AppleDouble
 .LSOverride
-
-# ── ML training artifacts ────────────────────────────
-backend/ml/__pycache__/
-bangla_ocr_best.h5
-training_logs/
-*.csv
-runs/
-
-# ── Render / deployment ──────────────────────────────
-.render/
-render.yaml.local
